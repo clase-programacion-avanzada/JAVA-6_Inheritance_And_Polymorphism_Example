@@ -104,5 +104,9 @@ public abstract class Seat {
     public abstract String getCategory();
 
     public abstract long getPrice();
+
+    public final String getStatusString() {
+        return status;
+    }
 }
 

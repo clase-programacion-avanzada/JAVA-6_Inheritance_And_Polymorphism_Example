@@ -2,26 +2,33 @@ package org.javeriana;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.javeriana.model.Cinema;
 import org.javeriana.model.Movie;
 import org.javeriana.model.Room;
 import org.javeriana.model.Show;
 import org.javeriana.model.Ticket;
+import org.javeriana.model.payment.AddiPaymentSystem;
+import org.javeriana.model.payment.MockPaymentSystem;
+import org.javeriana.model.payment.PaymentSystem;
 import org.javeriana.model.user.customer.Customer;
 import org.javeriana.model.user.customer.GoldCustomer;
 import org.javeriana.model.user.customer.PremiumCustomer;
 import org.javeriana.model.user.customer.RegularCustomer;
-import org.javeriana.payment.MockPaymentSystem;
-import org.javeriana.payment.PaymentSystem;
 
 public class Main {
     public static void main(String[] args) {
         // Initialize payment system
         PaymentSystem paymentSystem = new MockPaymentSystem();
-        
+        PaymentSystem addiPaymentSystem = new AddiPaymentSystem();
+
+        List<PaymentSystem> paymentSystems = List.of(
+            paymentSystem,
+            addiPaymentSystem
+        );
         // Create cinema
-        Cinema cinema = new Cinema(paymentSystem);
+        Cinema cinema = new Cinema(paymentSystems);
         
         // Create a room
         cinema.createRoom("Room 1");
@@ -62,9 +69,18 @@ public class Main {
         Show show = room.getShows().getFirst();
         
         // Create customers of different types
-        Customer regularCustomer = new RegularCustomer( "John Regular", "john@example.com", "password");
-        Customer goldCustomer = new GoldCustomer( "Jane Gold", "jane@example.com", "password");
-        Customer premiumCustomer = new PremiumCustomer( "Bob Premium", "bob@example.com", "password");
+        Customer regularCustomer = new RegularCustomer(
+            "John Regular",
+            "john@example.com",
+            "password");
+        Customer goldCustomer = new GoldCustomer(
+            "Jane Gold",
+            "jane@example.com",
+            "password");
+        Customer premiumCustomer = new PremiumCustomer(
+            "Bob Premium",
+            "bob@example.com",
+            "password");
         
         cinema.addCustomer(regularCustomer);
         cinema.addCustomer(goldCustomer);
@@ -77,19 +93,32 @@ public class Main {
         Set<String> regularSeats = new HashSet<>();
         regularSeats.add("A-1");
         regularSeats.add("A-2");
-        Ticket regularTicket = cinema.bookTicket(regularCustomer.getId(), show.getId(), regularSeats);
+        Ticket regularTicket = cinema.bookTicket(regularCustomer.getId(), 
+        show.getId(), 
+        regularSeats, 
+        "Addi" // Payment system
+
+        );
         
         // Gold customer books seats B1, B2
         Set<String> goldSeats = new HashSet<>();
         goldSeats.add("B-1");
         goldSeats.add("B-2");
-        Ticket goldTicket = cinema.bookTicket(goldCustomer.getId(), show.getId(), goldSeats);
+        Ticket goldTicket = cinema.bookTicket(goldCustomer.getId(), 
+        show.getId(), 
+        goldSeats, 
+        "Mock" // Payment system
+        );
         
         // Premium customer books premium seats E1, E2
         Set<String> premiumSeats = new HashSet<>();
         premiumSeats.add("E-1");
         premiumSeats.add("E-2");
-        Ticket premiumTicket = cinema.bookTicket(premiumCustomer.getId(), show.getId(), premiumSeats);
+        Ticket premiumTicket = cinema.bookTicket(premiumCustomer.getId(), 
+        show.getId(), 
+        premiumSeats,
+        "Addi" // Payment system
+        );
         
         // Print ticket details
         System.out.println("\n=== REGULAR CUSTOMER TICKET ===");

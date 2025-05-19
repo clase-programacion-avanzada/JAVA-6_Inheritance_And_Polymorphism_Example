@@ -1,8 +1,6 @@
 package org.javeriana.model;
 
 import java.time.LocalDateTime;
-import java.time.chrono.ChronoLocalDate;
-import java.time.chrono.ChronoLocalDateTime;
 import java.util.UUID;
 
 public class Show {

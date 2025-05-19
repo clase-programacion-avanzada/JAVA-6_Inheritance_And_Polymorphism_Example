@@ -3,8 +3,12 @@ package org.javeriana.model;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.javeriana.model.user.customer.Customer;
 import org.javeriana.model.seat.Seat;
 import org.javeriana.payment.PaymentSystem;
@@ -15,14 +19,19 @@ public class Cinema {
     private final List<Movie> movies;
     private final List<Customer> customers;
     private final List<Ticket> tickets;
-    private final PaymentSystem paymentSystem;
 
-    public Cinema(PaymentSystem paymentSystem) {
+    private final Map<String, PaymentSystem> paymentSystems;
+
+    public Cinema(List<PaymentSystem> paymentSystems) {
         this.rooms = new ArrayList<>();
         this.movies = new ArrayList<>();
         this.customers = new ArrayList<>();
         this.tickets = new ArrayList<>();
-        this.paymentSystem = paymentSystem;
+        this.paymentSystems =paymentSystems.stream()
+                .collect(
+                    Collectors.toMap(
+                        PaymentSystem::getPaymentName, 
+                        Function.identity()));
     }
 
     public void createRoom(String name) {
@@ -207,7 +216,10 @@ public class Cinema {
         return null;
     }
 
-    public Ticket bookTicket(UUID customerId, UUID showId, Set<String> seatIdentifiers) {
+    public Ticket bookTicket(UUID customerId, 
+        UUID showId, 
+        Set<String> seatIdentifiers,
+        String paymentSystemName) {
         Customer customer = getCustomerById(customerId);
         if (customer == null) {
             throw new IllegalArgumentException("Customer not found");
@@ -229,6 +241,11 @@ public class Cinema {
         // Calculate price
         long totalPrice = calculatePrice(customer, bookedSeats);
         
+        PaymentSystem paymentSystem = paymentSystems.getOrDefault(
+            paymentSystemName,
+            paymentSystems.get("MockPaymentSystem")
+        );
+
         // Process payment
         boolean paymentSuccessful = paymentSystem.processPayment(customer, totalPrice);
 
@@ -302,5 +319,9 @@ public class Cinema {
 
     public List<Room> getRooms() {
         return new ArrayList<>(rooms);
+    }
+
+    public List<Customer> getCustomers() {
+        return new ArrayList<>(customers);
     }
 }

@@ -1,0 +1,173 @@
+@startuml
+' skinparam linetype ortho
+' shows visibility with + for public, - for private, # for protected
+skinparam classAttributeIconSize 0
+package org.javeriana.model {
+
+  package user {
+    abstract class User {
+      # id: UUID
+      # name: String
+      # email: String
+      # password: String
+      + getId(): UUID
+      + getName(): String
+      + getEmail(): String
+      + getPassword(): String
+    }
+
+    class AdminUser extends User {
+    }
+
+    package customer {
+      abstract class Customer extends User {
+        + {abstract} getDiscount(): double
+        + addTicket(ticket: Ticket): void
+        + getTickets(): List<Ticket>
+      }
+
+      class RegularCustomer extends Customer {
+        + getDiscount(): double
+      }
+
+      class GoldCustomer extends Customer {
+        - {static} DISCOUNT_PERCENTAGE: double
+        + getDiscount(): double
+      }
+
+      class PremiumCustomer extends Customer {
+        - {static} DISCOUNT_PERCENTAGE: double
+        + getDiscount(): double
+      }
+    }
+  }
+
+  package seat {
+    abstract class Seat {
+      + {static} AVAILABLE: String
+      + {static} NOT_AVAILABLE: String
+      + {static} NOT_EXIST: String
+      - row: String
+      - number: int
+      - status: String
+      + getRow(): String
+      + getNumber(): int
+      + getStatus(): String
+      + setStatus(status: String): void
+      + getSeatDetails(): String
+      + {abstract} getCategory(): String
+      + {abstract} getPrice(): long
+    }
+
+    class RegularSeat extends Seat {
+      + getCategory(): String
+      + getPrice(): long
+    }
+
+    class PremiumSeat extends Seat {
+      + getCategory(): String
+      + getPrice(): long
+    }
+  }
+
+  package payment {
+    interface PaymentSystem {
+      + processPayment(customer: Customer, amount: long): boolean
+      + getPaymentName(): String
+    }
+
+    class MockPaymentSystem implements PaymentSystem {
+      + processPayment(customer: Customer, amount: long): boolean
+      + getPaymentName(): String
+    }
+
+    class AddiPaymentSystem implements PaymentSystem {
+      + processPayment(customer: Customer, amount: long): boolean
+      + getPaymentName(): String
+    }
+  }
+
+  class Cinema {
+    + createRoom(name: String): void
+    + addSeatsToRoom(roomId: UUID, size: int, row: String, type: String, skipNumbers: Set<Integer>): void
+    + addMovie(title: String, ...): void
+    + addCustomer(customer: Customer): void
+    + bookTicket(customerId: UUID, showId: UUID, seatIdentifiers: Set<String>, paymentSystemName: String): Ticket
+    + cancelTicket(ticketId: UUID): void
+    + getMovieById(movieId: UUID): Movie
+    + getRoomById(roomId: UUID): Room
+    + getCustomerById(customerId: UUID): Customer
+  }
+
+  class Room {
+    - id: UUID
+    - name: String
+    + createShow(showTime: LocalDateTime, movie: Movie): void
+    + addRowOfSeats(size: int, row: String, seatType: String, skipNumbers: Set<Integer>): void
+    + bookSeat(row: String, number: int): boolean
+    + getSeat(row: String, number: int): Seat
+    + getAvailableSeats(): List<Seat>
+    + getShowById(showId: UUID): Show
+    + bookSeats(seatIdentifiers: Set<String>): Set<Seat>
+    + releaseSeats(bookedSeats: Set<Seat>): void
+  }
+
+  class Movie {
+    - id: UUID
+    - title: String
+    - durationInMinutes: int
+    + getTitle(): String
+    + getDurationInMinutes(): int
+    + getId(): UUID
+  }
+
+  class Show {
+    - id: UUID
+    - showTime: LocalDateTime
+    - movie: Movie
+    + {static} calculateEndTime(showTime: LocalDateTime, durationInMinutes: int): LocalDateTime
+    + getShowTime(): LocalDateTime
+    + getId(): UUID
+    + getShowDetails(): String
+  }
+
+  class Ticket {
+    - id: UUID
+    - dateOfPurchase: LocalDateTime
+    - customer: Customer
+    + getPrice(): long
+    + getFinalPrice(): long
+    + ticketDetails(): List<String>
+    + getId(): UUID
+    + getSeats(): Set<Seat>
+  }
+}
+
+package org.javeriana {
+  class Main {
+    + {static} main(args: String[]): void
+  }
+}
+
+' Relationships
+Cinema o-> "0..*" Movie : has a list (movies)
+Cinema o--> "0..*" Ticket : has a list (tickets)
+Cinema o-left> "1..*" Room : has a list (rooms)
+Cinema o--> "0..*" Customer : has a list (customers)
+Cinema o-right> "1..*" PaymentSystem : has a map of payment systems by name (paymentSystems)
+
+Room o-left> "*" Seat : Has a map of seats by row (seats)
+Room o--> "0..*" Show
+
+Show o--> "1" Movie
+
+Ticket o-> "*" Seat : has a Set (seats)
+Ticket o--> "1" Show : has a show
+
+
+Customer "1" <--> "0..*" Ticket : has a ticket
+
+Main ..> Cinema : uses
+
+
+@enduml
