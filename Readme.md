@@ -31,7 +31,7 @@ Una interfaz en Java es un tipo de referencia, similar a una clase, que solo pue
 
 ### 3. Polimorfismo
 
-El polimorfismo (del griego "muchas formas") permite que objetos de diferentes clases sean tratados como objetos de una superclase común. Hay dos tipos principales:
+El polimorfismo (del griego "muchas formas") permite que objetos de diferentes clases sean tratados como objetos de una superclase común: 
 
 *   **Polimorfismo de Sobrescritura (Runtime Polymorphism):** Ocurre cuando una subclase proporciona una implementación específica de un método que ya está definido en su superclase.
 
